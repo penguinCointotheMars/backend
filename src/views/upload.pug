@@ -1,0 +1,11 @@
+
+
+form(action='/photo/upload/', method="post", enctype="multipart/form-data")
+    label(for="file") image file
+    input(type="file", id="file", name="photoFile", required=true, accept="image/*" )
+    input(type="text", placeholder="Title", name="title", required=true)
+    input(type="text", placeholder="email", name="email", required=true)
+    textarea(placeholder="Description", name="description",  required=true)
+    input(name="latt", placeholder="latt", required=true)
+    input(name="long", placeholder="long", required=true)
+    input(type="submit", value="Upload Photo")
