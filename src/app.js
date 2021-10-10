@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 const router = require('express').Router();
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json');
+// const swaggerDocument = require('./swagger.json');
 // import path from "path";
 // import passport from "passport";
 // import mongoose from "mongoose";
@@ -12,7 +12,6 @@ const swaggerDocument = require('./swagger.json');
 import cookieParser from "cookie-parser";
 import userRouter from "./routers/userRouter";
 import photoRouter from "./routers/photoRouter";
-import testRouter from "./routers/testRouter";
 import routes from './routes';
 // import { localsMiddleware } from './middlewares';
 
@@ -49,15 +48,13 @@ app.get(routes.home, function(req, res){
         res.json({message : "server is not working"});
     }
 })
-// /test
-app.use(routes.test, testRouter);
 // /users
 app.use(routes.users, userRouter);
 // /photo
 app.use(routes.photo, photoRouter);
 // API-docs
-router.use('/api-docs', swaggerUi.serve);
-router.get('/api-docs', swaggerUi.setup(swaggerDocument));
+// router.use('/api-docs', swaggerUi.serve);
+// router.get('/api-docs', swaggerUi.setup(swaggerDocument));
 
 
 export default app;

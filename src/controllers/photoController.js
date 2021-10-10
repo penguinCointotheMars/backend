@@ -1,5 +1,3 @@
-import Photo from '../models/Photo';
-import User from '../models/User';
 import { multerDelete } from "../middlewares";
 
 
