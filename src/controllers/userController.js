@@ -1,31 +1,115 @@
-
-// import passport from "passport";
 import bcrypt from "bcrypt";
+import {nanoid} from 'nanoid';
+import db from '../db_module/db';
+// import passport from "passport";
+// import { OAuth2Client } from "google-auth-library";
 // import app from '../app';
+// const client = new OAuth2Client(process.env.CLIENT_ID)
 
 export const getUsers = async (req, res) =>{
-    const users = await User.find({}).sort({ _id: -1 });
+
+    const users = 'user';
+
     res.status(200).json({users : users});
 }
 
 export const postJoin = async (req, res) => {
     try{
-        const user = await User.findOne({email : req.body.email});
-        if(user !== null){
-            res.status(400).json({success: false, message : "You are already registered"});
-        }else{
-            const hashedPassword = await bcrypt.hash(req.body.password, 10);
-            const user = await User.create({
-                username: req.body.username,
-                email: req.body.email,
-                password: hashedPassword,
-            });
-            res.status(200).json({success: true, user : user, message: "Your account has been saved"});
+        const { email, password, name, birth_date } = req.body;
+        const saltRounds = 10
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const user = {
+            email : email,
+            password : hashedPassword,
+            name : name,
+            birth_date : birth_date
+        };
+        let newUserId = nanoid();
+
+        
+        db.query('SELECT * FROM user_credential WHERE email = ?', email, function(err, result) {
+            if(err) throw err;
+            
+            if(result.length > 0) res.status(400).json({success: false, message : "You are already registered"});
+            else{
+                db.query('SELECT 1 FROM user_credential WHERE user_id = ?', newUserId, function(err, results) { 
+                    if(err) throw err;
+                    if(results.length > 0) newUserId = nanoid();
+                
+                })
+                user['user_id'] = newUserId;
+
+                db.query('INSERT INTO user_credential SET ?', user, function(err){
+                    if(err) throw err;
+                    else{
+                        res.status(200).json({success : true, message : "You are successfully registered",  email : email});
+                        // insertId add as asending 
+                    }
+
+                    } 
+                )
+                }
+            }
+        );
         }
+        catch(err){
+            throw err;
+        }
+    }
+
+
+
+
+//         var username = request.body.username;
+// 	var password = request.body.password;
+// 	if (username && password) {
+// 		connection.query('SELECT * FROM accounts WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
+// 			if (results.length > 0) {
+// 				request.session.loggedin = true;
+// 				request.session.username = username;
+// 				response.redirect('/home');
+// 			} else {
+// 				response.send('Incorrect Username and/or Password!');
+// 			}			
+// 			response.end();
+// 		});
+// 	} else {
+// 		response.send('Please enter Username and Password!');
+// 		response.end();
+// 	}
+
+
+
+
+//         const user = await User.findOne({email : req.body.email});
+//         if(user !== null){
+//             res.status(400).json({success: false, message : "You are already registered"});
+//         }else{
+//             const hashedPassword = await bcrypt.hash(req.body.password, 10);
+//             const user = await User.create({
+//                 username: req.body.username,
+//                 email: req.body.email,
+//                 password: hashedPassword,
+//             });
+//             res.status(200).json({success: true, user : user, message: "Your account has been saved"});
+//         }
+//     }catch(err){
+//         res.status(400).json({err : err});
+//     }
+// }
+
+export const postGoogleJoin = async (req, res) => {
+    try{
+
     }catch(err){
-        res.status(400).json({err : err});
+
     }
 }
+
+
+
+
 
 export const postLogin = async (req, res) => {
     try{

@@ -40,6 +40,8 @@ app.use(morgan('dev'));
 // app.use(localsMiddleware);
 
 
+
+
 // home url
 app.get(routes.home, function(req, res){
     try{

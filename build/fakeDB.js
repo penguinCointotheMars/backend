@@ -2,12 +2,6 @@
 
 var _faker = _interopRequireDefault(require("faker"));
 
-var _User = _interopRequireDefault(require("./src/models/User"));
-
-var _Photo = _interopRequireDefault(require("./src/models/Photo"));
-
-var _mongoose = _interopRequireDefault(require("mongoose"));
-
 var _dotenv = _interopRequireDefault(require("dotenv"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -24,12 +18,11 @@ _dotenv["default"].config(); // mongoose.connect(process.env.MONGO_URL_PROD,
 // );
 
 
-_mongoose["default"].connect(process.env.MONGO_URL_PROD, {
+mongoose.connect(process.env.MONGO_URL_PROD, {
   useNewUrlParser: true,
   useFindAndModify: false
 });
-
-var db = _mongoose["default"].connection;
+var db = mongoose.connection;
 
 var handleOpen = function handleOpen() {
   return console.log("✅ Connected to DB");
@@ -67,7 +60,7 @@ var fakeUser = /*#__PURE__*/function () {
             randomName = _faker["default"].name.findName();
             randomEmail = _faker["default"].internet.email();
             _context.next = 4;
-            return _User["default"].create({
+            return User.create({
               username: randomName,
               email: randomEmail,
               password: password
@@ -133,7 +126,7 @@ for (var i = 0; i <= 10; i++) {
               randomLong = 35 + Math.random() * 2;
               randomImg = _faker["default"].image.imageUrl();
               _context3.next = 9;
-              return _Photo["default"].create({
+              return Photo.create({
                 imageURL: randomImg,
                 thumbnailURL: randomImg,
                 title: randomTitle,

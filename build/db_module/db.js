@@ -1,5 +1,10 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
 var _mysql = _interopRequireDefault(require("mysql"));
 
 var _dotenv = _interopRequireDefault(require("dotenv"));
@@ -14,7 +19,7 @@ var db = _mysql["default"].createPool({
   user: process.env.RDS_USERNAME,
   acquireTimeout: 600000,
   password: process.env.RDS_PASSWORD,
-  database: database,
+  database: process.env.RDS_DB,
   multipleStatements: true
 });
 
@@ -28,3 +33,5 @@ var handleError = function handleError(error) {
 
 db.once("open", handleOpen);
 db.on("error", handleError);
+var _default = db;
+exports["default"] = _default;

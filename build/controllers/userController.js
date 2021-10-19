@@ -5,9 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.postLogin = exports.postJoin = exports.postChangePassword = exports.getUsers = void 0;
 
-var _User = _interopRequireDefault(require("../models/User"));
-
 var _bcrypt = _interopRequireDefault(require("bcrypt"));
+
+var _db = _interopRequireDefault(require("../db_module/db"));
+
+var _googleAuthLibrary = require("google-auth-library");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -15,7 +17,8 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-// import app from '../app';
+var client = new _googleAuthLibrary.OAuth2Client(process.env.CLIENT_ID);
+
 var getUsers = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
     var users;
@@ -24,7 +27,7 @@ var getUsers = /*#__PURE__*/function () {
         switch (_context.prev = _context.next) {
           case 0:
             _context.next = 2;
-            return _User["default"].find({}).sort({
+            return User.find({}).sort({
               _id: -1
             });
 
@@ -59,7 +62,7 @@ var postJoin = /*#__PURE__*/function () {
           case 0:
             _context2.prev = 0;
             _context2.next = 3;
-            return _User["default"].findOne({
+            return User.findOne({
               email: req.body.email
             });
 
@@ -85,7 +88,7 @@ var postJoin = /*#__PURE__*/function () {
           case 10:
             hashedPassword = _context2.sent;
             _context2.next = 13;
-            return _User["default"].create({
+            return User.create({
               username: req.body.username,
               email: req.body.email,
               password: hashedPassword
@@ -134,7 +137,7 @@ var postLogin = /*#__PURE__*/function () {
           case 0:
             _context3.prev = 0;
             _context3.next = 3;
-            return _User["default"].findOne({
+            return User.findOne({
               email: req.body.email
             });
 
@@ -220,7 +223,7 @@ var postChangePassword = /*#__PURE__*/function () {
           case 0:
             _context4.prev = 0;
             _context4.next = 3;
-            return _User["default"].findOne({
+            return User.findOne({
               email: req.body.email
             });
 
@@ -263,7 +266,7 @@ var postChangePassword = /*#__PURE__*/function () {
           case 16:
             password = _context4.sent;
             _context4.next = 19;
-            return _User["default"].findOneAndUpdate({
+            return User.findOneAndUpdate({
               email: req.body.email
             }, {
               password: password

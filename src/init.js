@@ -1,5 +1,5 @@
 import "regenerator-runtime";
-import "./db";
+import "./db_module/db";
 import app from './app';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -12,6 +12,3 @@ const handelListening = () =>
   console.log(`✅ Listening on : http://localhost:${PORT}`);
 
 app.listen(PORT, handelListening);
-
-
-

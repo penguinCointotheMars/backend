@@ -22,3 +22,5 @@ const handleError = (error) =>
 
 db.once("open", handleOpen);
 db.on("error", handleError);
+
+ export default db;

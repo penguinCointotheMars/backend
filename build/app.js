@@ -17,17 +17,14 @@ var _userRouter = _interopRequireDefault(require("./routers/userRouter"));
 
 var _photoRouter = _interopRequireDefault(require("./routers/photoRouter"));
 
-var _testRouter = _interopRequireDefault(require("./routers/testRouter"));
-
 var _routes = _interopRequireDefault(require("./routes"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var router = require('express').Router();
 
-var swaggerUi = require('swagger-ui-express');
-
-var swaggerDocument = require('./swagger.json'); // import path from "path";
+var swaggerUi = require('swagger-ui-express'); // const swaggerDocument = require('./swagger.json');
+// import path from "path";
 // import passport from "passport";
 // import mongoose from "mongoose";
 // import session from "express-session";
@@ -63,15 +60,13 @@ app.get(_routes["default"].home, function (req, res) {
       message: "server is not working"
     });
   }
-}); // /test
-
-app.use(_routes["default"].test, _testRouter["default"]); // /users
+}); // /users
 
 app.use(_routes["default"].users, _userRouter["default"]); // /photo
 
 app.use(_routes["default"].photo, _photoRouter["default"]); // API-docs
+// router.use('/api-docs', swaggerUi.serve);
+// router.get('/api-docs', swaggerUi.setup(swaggerDocument));
 
-router.use('/api-docs', swaggerUi.serve);
-router.get('/api-docs', swaggerUi.setup(swaggerDocument));
 var _default = app;
 exports["default"] = _default;

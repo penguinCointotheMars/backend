@@ -25,6 +25,10 @@ const PHOTO_DETAIL = "/:id";
 const EDIT_PHOTO = "/edit";
 const DELETE_PHOTO = "/delete";
 
+// Google
+const GOOGLE = "/auth/google";
+const GOOGLE_CALLBACK = "auth/google/callback";
+
 // Facebook
 const FB = "/auth/facebook";
 const FB_CALLBACK = "/auth/facebook/callback";
@@ -65,6 +69,8 @@ const routes = {
   editPhoto: EDIT_PHOTO,
   deletePhoto: DELETE_PHOTO,
   me: ME,
+  google: GOOGLE,
+  googleCallback : GOOGLE_CALLBACK,
   facebook: FB,
   facebookCallback: FB_CALLBACK,
   api: API,

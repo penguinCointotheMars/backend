@@ -5,13 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.uploadTest = exports.postUpload = exports.postSearch = exports.postEditPhoto = exports.postDeletePhoto = void 0;
 
-var _Photo = _interopRequireDefault(require("../models/Photo"));
-
-var _User = _interopRequireDefault(require("../models/User"));
-
 var _middlewares = require("../middlewares");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _readOnlyError(name) { throw new TypeError("\"" + name + "\" is read-only"); }
 
@@ -32,7 +26,7 @@ var postSearch = /*#__PURE__*/function () {
             photos = [];
             _context.prev = 3;
             _context.next = 6;
-            return _Photo["default"].find({
+            return Photo.find({
               GPS: {
                 $near: {
                   $maxDistance: parseFloat(distance),
@@ -87,14 +81,14 @@ var postUpload = /*#__PURE__*/function () {
             _req$body2 = req.body, title = _req$body2.title, description = _req$body2.description, email = _req$body2.email, _long2 = _req$body2["long"], latt = _req$body2.latt, location = req.file.location;
             _context2.prev = 1;
             _context2.next = 4;
-            return _User["default"].findOne({
+            return User.findOne({
               email: email
             });
 
           case 4:
             uploader = _context2.sent;
             _context2.next = 7;
-            return _Photo["default"].create({
+            return Photo.create({
               imageURL: location,
               thumbnailURL: location,
               title: title,
@@ -150,7 +144,7 @@ var postEditPhoto = /*#__PURE__*/function () {
             _req$body3 = req.body, title = _req$body3.title, description = _req$body3.description, _id = _req$body3._id;
             _context3.prev = 1;
             _context3.next = 4;
-            return _Photo["default"].findOneAndUpdate({
+            return Photo.findOneAndUpdate({
               _id: _id
             }, {
               title: title,
@@ -228,7 +222,7 @@ var postDeletePhoto = /*#__PURE__*/function () {
             _id = req.body._id;
             _context5.prev = 1;
             _context5.next = 4;
-            return _Photo["default"].findById({
+            return Photo.findById({
               _id: _id
             });
 
@@ -241,7 +235,7 @@ var postDeletePhoto = /*#__PURE__*/function () {
             };
             (0, _middlewares.multerDelete)(params);
             _context5.next = 10;
-            return _Photo["default"].findOneAndDelete({
+            return Photo.findOneAndDelete({
               _id: _id
             });
 
