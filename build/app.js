@@ -53,7 +53,7 @@ app.use((0, _morgan["default"])('dev')); // app.use(passport.initialize());
 app.get(_routes["default"].home, function (req, res) {
   try {
     res.json({
-      message: "server is connected"
+      message: "😉server is connected!! 너와.나으.연결.고리"
     });
   } catch (_unused) {
     res.json({

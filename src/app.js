@@ -45,9 +45,9 @@ app.use(morgan('dev'));
 // home url
 app.get(routes.home, function(req, res){
     try{
-        res.json({message : "server is connected"});
+        res.json({message : "😉server is connected!! 너와.나으.연결.고리"});
     }catch{
-        res.json({message : "server is not working"});
+        res.json({message : "😀 server is not working. 오늘 장사 안 해..."});
     }
 })
 // /users
