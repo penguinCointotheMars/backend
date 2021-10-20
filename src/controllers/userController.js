@@ -7,10 +7,28 @@ import db from '../db_module/db';
 // const client = new OAuth2Client(process.env.CLIENT_ID)
 
 export const getUsers = async (req, res) =>{
+    try{
+        db.query('SELECT * FROM user_credential LIMIT 100', function(err, result){
+            if(err) throw err;
 
-    const users = 'user';
-
-    res.status(200).json({users : users});
+            if(result.length > 0){
+                let allUsers = [];
+                result.forEach(e => {
+                    const user = {
+                        email : e.email,
+                        name : e.name,
+                        user_id : e.user_id
+                    };
+                    allUsers.push(user);
+                });
+                res.status(200).json({success : true, user : allUsers, message : "User credentials limited 100"});
+            }else{
+                res.status(400).json({success : false, message : "Not found user information"});
+            }
+        });
+    }catch(err){
+        throw err;
+    }
 }
 
 export const postJoin = async (req, res) => {
@@ -26,8 +44,6 @@ export const postJoin = async (req, res) => {
             birth_date : birth_date
         };
         let newUserId = nanoid();
-
-        
         db.query('SELECT * FROM user_credential WHERE email = ?', email, function(err, result) {
             if(err) throw err;
             
@@ -46,19 +62,40 @@ export const postJoin = async (req, res) => {
                         res.status(200).json({success : true, message : "You are successfully registered",  email : email});
                         // insertId add as asending 
                     }
-
-                    } 
-                )
-                }
-            }
-        );
+                })}
+            });
         }
         catch(err){
             throw err;
         }
     }
 
+export const postLogin = async (req, res) => {
+    try{
+        const { email, password } = req.body;
+        db.query('SELECT * FROM user_credential WHERE email = ?', email, async function(err, result){
+            if (err) throw err;
 
+            if(result.length === 0) res.status(400).json({success : false, message : "Email is incorrect"});
+            else{
+                if(result.length !== 1) console.log("😱😱😱😱😱 Error : user email is duplicated. Please check DB!")
+                const hashedPassword = result[0].password;
+
+                if(await bcrypt.compare(password, hashedPassword)){
+                    const loggedUser = {
+                        email : email,
+                        user_id : result[0].user_id,
+                    }
+                    res.status(200).json({success : true, user : loggedUser, message : "Login success"});
+                }else{
+                    res.status(400).json({success : false, message: "Password is incorrect"});
+                }
+            }
+        })
+    }catch(err){
+        throw err;
+    }
+}
 
 
 //         var username = request.body.username;
@@ -111,29 +148,29 @@ export const postGoogleJoin = async (req, res) => {
 
 
 
-export const postLogin = async (req, res) => {
-    try{
-        const user = await User.findOne({email : req.body.email});
-        if(user === null){
-            res.status(400).json({success: false, message : "email is incorrect"});
-        }else{
-            if(await bcrypt.compare(req.body.password, user.password)){
-                const loggedUser = {
-                    email : user.email,
-                    _id : user._id,
-                    photos : user.photos,
-                    comments : user.comments, 
-                    username: user.username ? user.username : "",
-                }
-                res.status(200).json({success: true, user : loggedUser, message : "Login success"});
-            }else{
-                res.status(400).json({success: false, message : "password is incorrect"});
-            }
-        }
-    }catch(error){
-        res.status(400).json({err : err});
-    }
-}
+// export const postLogin = async (req, res) => {
+//     try{
+//         const user = await User.findOne({email : req.body.email});
+//         if(user === null){
+//             res.status(400).json({success: false, message : "email is incorrect"});
+//         }else{
+//             if(await bcrypt.compare(req.body.password, user.password)){
+//                 const loggedUser = {
+//                     email : user.email,
+//                     _id : user._id,
+//                     photos : user.photos,
+//                     comments : user.comments, 
+//                     username: user.username ? user.username : "",
+//                 }
+//                 res.status(200).json({success: true, user : loggedUser, message : "Login success"});
+//             }else{
+//                 res.status(400).json({success: false, message : "password is incorrect"});
+//             }
+//         }
+//     }catch(error){
+//         res.status(400).json({err : err});
+//     }
+// }
 
 export const postChangePassword = async (req, res) => {
 
