@@ -17,7 +17,7 @@ var userRouter = _express["default"].Router();
 
 userRouter.get(_routes["default"].home, _userController.getUsers);
 userRouter.post(_routes["default"].join, _userController.postJoin);
-userRouter.post(_routes["default"].google);
+userRouter.post(_routes["default"].google, _userController.postGoogleJoin);
 userRouter.post(_routes["default"].login, _userController.postLogin);
 userRouter.post(_routes["default"].changePassword, _userController.postChangePassword);
 var _default = userRouter;

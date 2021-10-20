@@ -7,7 +7,7 @@
     "start": "node build/init.js",
     "build": "npm run build:server",
     "dev:server": "nodemon --exec babel-node src/init.js --delay 2",
-    "build:server": "babel src -d build",
+    "build:server": "rm -rf build && babel src -d build",
     "fakeDB": "nodemon --exec babel-node fakeDB.js --delay 2"
   },
   "repository": {
