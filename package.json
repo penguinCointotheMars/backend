@@ -4,6 +4,7 @@
   "description": "easygoing backend service",
   "main": "init.js",
   "scripts": {
+    "auto:start": "npm run build:server && npm run start",
     "start": "node build/init.js",
     "build": "npm run build:server",
     "dev:server": "nodemon --exec babel-node src/init.js --delay 2",
