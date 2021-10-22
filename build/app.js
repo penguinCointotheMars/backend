@@ -57,7 +57,7 @@ app.get(_routes["default"].home, function (req, res) {
     });
   } catch (_unused) {
     res.json({
-      message: "server is not working"
+      message: "😀 server is not working. 오늘 장사 안 해..."
     });
   }
 }); // /users

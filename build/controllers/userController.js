@@ -80,14 +80,16 @@ exports.getUsers = getUsers;
 
 var postJoin = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(req, res) {
-    var _req$body, email, password, name, birth_date, saltRounds, salt, hashedPassword, user, newUserId;
+    var _req$body, email, password, name, birthDate, address, phoneNumber, userType, description, saltRounds, salt, hashedPassword, user, newUserId;
 
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.prev = 0;
-            _req$body = req.body, email = _req$body.email, password = _req$body.password, name = _req$body.name, birth_date = _req$body.birth_date;
+            // To do : 1) 포토는 따로 S3 연결하는 함수 생성해서 req에서 받아옴 
+            //         2) id Verification : 따로 함수 생성 
+            _req$body = req.body, email = _req$body.email, password = _req$body.password, name = _req$body.name, birthDate = _req$body.birthDate, address = _req$body.address, phoneNumber = _req$body.phoneNumber, userType = _req$body.userType, description = _req$body.description;
             saltRounds = 10;
             salt = _bcrypt["default"].genSaltSync(saltRounds);
             _context2.next = 6;
@@ -99,8 +101,13 @@ var postJoin = /*#__PURE__*/function () {
               email: email,
               password: hashedPassword,
               name: name,
-              birth_date: birth_date
+              birth_date: birthDate,
+              address: address,
+              phone_number: phoneNumber,
+              user_type: userType,
+              description: description
             };
+            console.log(user);
             newUserId = (0, _nanoid.nanoid)();
 
             _db["default"].query('SELECT * FROM user_credential WHERE email = ?', email, function (err, result) {
@@ -128,20 +135,20 @@ var postJoin = /*#__PURE__*/function () {
               }
             });
 
-            _context2.next = 15;
+            _context2.next = 16;
             break;
 
-          case 12:
-            _context2.prev = 12;
+          case 13:
+            _context2.prev = 13;
             _context2.t0 = _context2["catch"](0);
             throw _context2.t0;
 
-          case 15:
+          case 16:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 12]]);
+    }, _callee2, null, [[0, 13]]);
   }));
 
   return function postJoin(_x3, _x4) {

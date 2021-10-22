@@ -1,36 +1,37 @@
 import { multerDelete } from "../middlewares";
+import db from '../db_module/db';
 
 
-export const postSearch = async (req, res) => {
-    const {
-        body:{
-            latt, long, distance
-        }, 
-    } = req;
+// export const postSearch = async (req, res) => {
+//     const {
+//         body:{
+//             latt, long, distance
+//         }, 
+//     } = req;
     
-    if(!distance) distance = 1000;
+//     if(!distance) distance = 1000;
 
-    let photos = [];
+//     let photos = [];
     
-    try{
-        photos = await Photo.find({
-            GPS:{
-                $near:{
-                    $maxDistance: parseFloat(distance),
-                    $geometry:{
-                        type: "Point",
-                        coordinates : [parseFloat(long), parseFloat(latt)]
-                    }
-                }
-            }
-        }).sort({_id : -1});
+//     try{
+//         photos = await Photo.find({
+//             GPS:{
+//                 $near:{
+//                     $maxDistance: parseFloat(distance),
+//                     $geometry:{
+//                         type: "Point",
+//                         coordinates : [parseFloat(long), parseFloat(latt)]
+//                     }
+//                 }
+//             }
+//         }).sort({_id : -1});
 
-        res.status(200).json({success: true, photos : photos, message: `${photos.length} photos were searched`});
+//         res.status(200).json({success: true, photos : photos, message: `${photos.length} photos were searched`});
 
-    }catch(error){
-        res.status(400).send(error);
-    }
-};
+//     }catch(error){
+//         res.status(400).send(error);
+//     }
+// };
 
 
 export const postUpload = async(req, res) => {

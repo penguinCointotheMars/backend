@@ -9,7 +9,7 @@ import db from '../db_module/db';
 export const getUsers = async (req, res) =>{
     try{
         db.query('SELECT * FROM user_credential LIMIT 100', function(err, result){
-            if(err) throw err;
+            if(err) res.status(400).json({err : err});
 
             if(result.length > 0){
                 let allUsers = [];
@@ -27,13 +27,17 @@ export const getUsers = async (req, res) =>{
             }
         });
     }catch(err){
-        throw err;
+        res.status(400).json({err : err});
     }
 }
 
 export const postJoin = async (req, res) => {
+
+    const { email, password, name, birthDate, address, phoneNumber, userType, description } = req.body;
+    
     try{
-        const { email, password, name, birth_date } = req.body;
+        // To do : 1) 포토는 따로 S3 연결하는 함수 생성해서 req에서 받아옴 
+        //         2) id Verification : 따로 함수 생성 
         const saltRounds = 10
         const salt = bcrypt.genSaltSync(saltRounds);
         const hashedPassword = await bcrypt.hash(password, salt);
@@ -41,40 +45,52 @@ export const postJoin = async (req, res) => {
             email : email,
             password : hashedPassword,
             name : name,
-            birth_date : birth_date
+            birth_date : birthDate,
+            address : address,
+            phone_number : phoneNumber,
+            user_type : userType,
+            description : description
         };
+
         let newUserId = nanoid();
         db.query('SELECT * FROM user_credential WHERE email = ?', email, function(err, result) {
-            if(err) throw err;
+            if(err) res.status(400).json({err : err});
             
             if(result.length > 0) res.status(400).json({success: false, message : "You are already registered"});
             else{
                 db.query('SELECT 1 FROM user_credential WHERE user_id = ?', newUserId, function(err, results) { 
-                    if(err) throw err;
+                    if(err) res.status(400).json({err : err});
                     if(results.length > 0) newUserId = nanoid();
                 
                 })
                 user['user_id'] = newUserId;
 
                 db.query('INSERT INTO user_credential SET ?', user, function(err){
-                    if(err) throw err;
+                    if(err) res.status(400).json({err : err});
                     else{
-                        res.status(200).json({success : true, message : "You are successfully registered",  email : email});
+                        const loggedUser = {
+                            email : email,
+                            user_id : newUserId
+                        }
+                        res.status(200).json({success : true, message : "You are successfully registered",  user : loggedUser});
                         // insertId add as asending 
                     }
                 })}
             });
         }
         catch(err){
-            throw err;
+            res.status(400).json({err : err})
         }
     }
 
 export const postLogin = async (req, res) => {
+    
+    const { email, password } = req.body;
+
     try{
-        const { email, password } = req.body;
         db.query('SELECT * FROM user_credential WHERE email = ?', email, async function(err, result){
-            if (err) throw err;
+            console.log(result);
+            if (err) res.status(400).json({err : err})
 
             if(result.length === 0) res.status(400).json({success : false, message : "Email is incorrect"});
             else{
@@ -93,109 +109,78 @@ export const postLogin = async (req, res) => {
             }
         })
     }catch(err){
-        throw err;
+        res.status(400).json({err : err})
     }
 }
 
+// export const postGoogleJoin = async (req, res) => {
+//     try{
 
-//         var username = request.body.username;
-// 	var password = request.body.password;
-// 	if (username && password) {
-// 		connection.query('SELECT * FROM accounts WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
-// 			if (results.length > 0) {
-// 				request.session.loggedin = true;
-// 				request.session.username = username;
-// 				response.redirect('/home');
-// 			} else {
-// 				response.send('Incorrect Username and/or Password!');
-// 			}			
-// 			response.end();
-// 		});
-// 	} else {
-// 		response.send('Please enter Username and Password!');
-// 		response.end();
-// 	}
-
-
-
-
-//         const user = await User.findOne({email : req.body.email});
-//         if(user !== null){
-//             res.status(400).json({success: false, message : "You are already registered"});
-//         }else{
-//             const hashedPassword = await bcrypt.hash(req.body.password, 10);
-//             const user = await User.create({
-//                 username: req.body.username,
-//                 email: req.body.email,
-//                 password: hashedPassword,
-//             });
-//             res.status(200).json({success: true, user : user, message: "Your account has been saved"});
-//         }
 //     }catch(err){
-//         res.status(400).json({err : err});
+
 //     }
 // }
 
-export const postGoogleJoin = async (req, res) => {
-    try{
+// export const postChangePassword = async (req, res) => {
 
-    }catch(err){
-
-    }
-}
-
-
-
-
-
-// export const postLogin = async (req, res) => {
 //     try{
 //         const user = await User.findOne({email : req.body.email});
-//         if(user === null){
-//             res.status(400).json({success: false, message : "email is incorrect"});
-//         }else{
-//             if(await bcrypt.compare(req.body.password, user.password)){
-//                 const loggedUser = {
-//                     email : user.email,
-//                     _id : user._id,
-//                     photos : user.photos,
-//                     comments : user.comments, 
-//                     username: user.username ? user.username : "",
-//                 }
-//                 res.status(200).json({success: true, user : loggedUser, message : "Login success"});
-//             }else{
-//                 res.status(400).json({success: false, message : "password is incorrect"});
-//             }
+
+//         if(req.body.password === req.body.newpassword){
+//             res.status(400).json({success: false, message: "new password is same"});
 //         }
+//         else if(!(await bcrypt.compare(req.body.password, user.password))){
+//             res.status(400).json({success: false, message: "wrong password"});
+//         }else{
+//                 const password = await bcrypt.hash(req.body.newpassword, 10);
+//                 const user = await User.findOneAndUpdate({ email: req.body.email }, { password});
+//                 res.status(200).json({success : true, user : user,  message : "successfully password was changed"});
+//         }
+
 //     }catch(error){
 //         res.status(400).json({err : err});
 //     }
 // }
 
-export const postChangePassword = async (req, res) => {
+export const postEditProfile = async (req, res) => {
+
+    const { 
+        body : {user_id, email, address, phoneNumber, userType, description},
+        file : {location}
+    } = req;
+    console.log(user_id, email);
 
     try{
-        const user = await User.findOne({email : req.body.email});
+        db.query('SELECT * FROM user_credential WHERE user_id = ? AND email = ?', [user_id, email], function(err, result){
+            if(err) res.status(400).json({err : err});
 
-        if(req.body.password === req.body.newpassword){
-            res.status(400).json({success: false, message: "new password is same"});
-        }
-        else if(!(await bcrypt.compare(req.body.password, user.password))){
-            res.status(400).json({success: false, message: "wrong password"});
-        }else{
-                const password = await bcrypt.hash(req.body.newpassword, 10);
-                const user = await User.findOneAndUpdate({ email: req.body.email }, { password});
-                res.status(200).json({success : true, user : user,  message : "successfully password was changed"});
-        }
+            if(result.length > 1) {
+                res.status(400).json({ 
+                    success : false, 
+                    message : "😨😨😨😨 user_id is duplicated! Please check DB!"
+                })
+            }
+            else{
+                const userUpdate = {
+                    address : address, 
+                    phone_number : phoneNumber,
+                    user_type : userType,
+                    description : description,
+                    profile_url : location
+                }
 
-    }catch(error){
+                db.query("UPDATE user_credential SET ? WHERE user_id = ?", [userUpdate, result[0].user_id], function (err, results) {
+                    if(err) res.status(400).json({success : false, err : err});
+                    else{
+                        res.status(200).json({ success : true, user : userUpdate, message : "😉 user profile update is completed!"});
+                    }
+                })
+            }
+        })
+    }catch(err){
         res.status(400).json({err : err});
     }
 }
-
-
-
-
 
 
 

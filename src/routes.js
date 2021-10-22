@@ -59,9 +59,9 @@ const routes = {
   changePassword: CHANGE_PASSWORD,
   photo: PHOTO,
   upload: UPLOAD,
-  photoDetail: (id) => {
-    if (id) {
-      return `/photos/${id}`;
+  photoDetail: (user_id) => {
+    if (user_id) {
+      return `/photos/${user_id}`;
     } else {
       return PHOTO_DETAIL;
     }

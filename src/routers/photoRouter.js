@@ -9,7 +9,7 @@ const photoRouter = express.Router();
 
 // 'photo/search' 
 // post : {location : [long, latt], distance : distance}
-photoRouter.post(routes.search, postSearch);
+// photoRouter.post(routes.search, postSearch);
 
 //'photo/upload'
 // post : {title, description, location, _id, imageData}
