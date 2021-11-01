@@ -35,48 +35,61 @@ export const postJoin = async (req, res) => {
 
     const { email, password, name, birthDate, address, phoneNumber, userType, description } = req.body;
     
+    
     try{
         // To do : 1) 포토는 따로 S3 연결하는 함수 생성해서 req에서 받아옴 
         //         2) id Verification : 따로 함수 생성 
-        const saltRounds = 10
-        const salt = bcrypt.genSaltSync(saltRounds);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        const user = {
-            email : email,
-            password : hashedPassword,
-            name : name,
-            birth_date : birthDate,
-            address : address,
-            phone_number : phoneNumber,
-            user_type : userType,
-            description : description
-        };
-
-        let newUserId = nanoid();
-        db.query('SELECT * FROM user_credential WHERE email = ?', email, function(err, result) {
-            if(err) res.status(400).json({err : err});
-            
-            if(result.length > 0) res.status(400).json({success: false, message : "You are already registered"});
-            else{
-                db.query('SELECT 1 FROM user_credential WHERE user_id = ?', newUserId, function(err, results) { 
-                    if(err) res.status(400).json({err : err});
-                    if(results.length > 0) newUserId = nanoid();
+        if(email == "" || password == "" || name == "" || birthDate == "" || address == "" || phoneNumber == "" || userType == "" || description == "") {
+            res.status(400).json({success: false, message : "Please fully fill fields!"});
+        }else if(!/^[a-zA-Z ]*$/.test(name)){
+            res.status(400).json({success: false, message : "Invalid name"});
+        }else if(!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)){
+            res.status(400).json({success: false, message : "Invalid email"});
+        }else if(!new Date(birthDate).getTime()){
+            res.status(400).json({success: false, message : "Invalid date of birth entered"});
+        }else if (password.length < 8){
+            res.status(400).json({success: false, message : "Password is too short!"});
+        }else{
+            const saltRounds = 10
+            const salt = bcrypt.genSaltSync(saltRounds);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            const user = {
+                email : email,
+                password : hashedPassword,
+                name : name,
+                birth_date : birthDate,
+                address : address,
+                phone_number : phoneNumber,
+                user_type : userType,
+                description : description
+            };
+    
+            let newUserId = nanoid();
+            db.query('SELECT * FROM user_credential WHERE email = ?', email, function(err, result) {
+                if(err) res.status(400).json({err : err});
                 
-                })
-                user['user_id'] = newUserId;
-
-                db.query('INSERT INTO user_credential SET ?', user, function(err){
-                    if(err) res.status(400).json({err : err});
-                    else{
-                        const loggedUser = {
-                            email : email,
-                            user_id : newUserId
+                if(result.length > 0) res.status(400).json({success: false, message : "You are already registered"});
+                else{
+                    db.query('SELECT 1 FROM user_credential WHERE user_id = ?', newUserId, function(err, results) { 
+                        if(err) res.status(400).json({err : err});
+                        if(results.length > 0) newUserId = nanoid();
+                    
+                    })
+                    user['user_id'] = newUserId;
+    
+                    db.query('INSERT INTO user_credential SET ?', user, function(err){
+                        if(err) res.status(400).json({err : err});
+                        else{
+                            const loggedUser = {
+                                email : email,
+                                user_id : newUserId
+                            }
+                            res.status(200).json({success : true, message : "You are successfully registered",  user : loggedUser});
+                            // insertId add as asending 
                         }
-                        res.status(200).json({success : true, message : "You are successfully registered",  user : loggedUser});
-                        // insertId add as asending 
-                    }
-                })}
-            });
+                    })}
+                });
+            }
         }
         catch(err){
             res.status(400).json({err : err})
@@ -88,26 +101,29 @@ export const postLogin = async (req, res) => {
     const { email, password } = req.body;
 
     try{
-        db.query('SELECT * FROM user_credential WHERE email = ?', email, async function(err, result){
-            console.log(result);
-            if (err) res.status(400).json({err : err})
-
-            if(result.length === 0) res.status(400).json({success : false, message : "Email is incorrect"});
-            else{
-                if(result.length !== 1) console.log("😱😱😱😱😱 Error : user email is duplicated. Please check DB!")
-                const hashedPassword = result[0].password;
-
-                if(await bcrypt.compare(password, hashedPassword)){
-                    const loggedUser = {
-                        email : email,
-                        user_id : result[0].user_id,
+        if(email == "" || password == "") {
+            res.status(400).json({success: false, message : "Please fully fill fields!"});
+        }else{
+            db.query('SELECT * FROM user_credential WHERE email = ?', email, async function(err, result){
+                if (err) res.status(400).json({err : err})
+    
+                if(result.length === 0) res.status(400).json({success : false, message : "Email is incorrect"});
+                else{
+                    if(result.length !== 1) console.log("😱😱😱😱😱 Error : user email is duplicated. Please check DB!")
+                    const hashedPassword = result[0].password;
+    
+                    if(await bcrypt.compare(password, hashedPassword)){
+                        const loggedUser = {
+                            email : email,
+                            user_id : result[0].user_id,
+                        }
+                        res.status(200).json({success : true, user : loggedUser, message : "Login success"});
+                    }else{
+                        res.status(400).json({success : false, message: "Password is incorrect"});
                     }
-                    res.status(200).json({success : true, user : loggedUser, message : "Login success"});
-                }else{
-                    res.status(400).json({success : false, message: "Password is incorrect"});
                 }
-            }
-        })
+            });
+        }
     }catch(err){
         res.status(400).json({err : err})
     }
