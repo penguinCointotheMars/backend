@@ -13,6 +13,8 @@ var _multerS = _interopRequireDefault(require("multer-s3"));
 
 var _dotenv = _interopRequireDefault(require("dotenv"));
 
+var _credentials = require("./credentials");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 _dotenv["default"].config(); // import routes from "./routes";
@@ -21,8 +23,8 @@ _dotenv["default"].config(); // import routes from "./routes";
 
 var s3 = new _awsSdk["default"].S3({
   credentials: {
-    accessKeyId: process.env.S3_ID,
-    secretAccessKey: process.env.S3_SECRET
+    accessKeyId: _credentials.S3_ID,
+    secretAccessKey: _credentials.S3_SECRET
   }
 });
 var multerPhoto = (0, _multer["default"])({

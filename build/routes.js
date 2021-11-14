@@ -61,9 +61,9 @@ var routes = {
   changePassword: CHANGE_PASSWORD,
   photo: PHOTO,
   upload: UPLOAD,
-  photoDetail: function photoDetail(id) {
-    if (id) {
-      return "/photos/".concat(id);
+  photoDetail: function photoDetail(user_id) {
+    if (user_id) {
+      return "/photos/".concat(user_id);
     } else {
       return PHOTO_DETAIL;
     }

@@ -1,15 +1,16 @@
 import mysql from 'mysql';
 import dotenv from "dotenv";
+import { RDS_DB, RDS_HOSTNAME, RDS_PASSWORD, RDS_USERNAME } from '../credentials';
 dotenv.config();
 
 
 const db = mysql.createPool({
     connectionLimit: 10,
-    host: process.env.RDS_HOSTNAME,
-    user: process.env.RDS_USERNAME,
+    host: RDS_HOSTNAME,
+    user: RDS_USERNAME,
     acquireTimeout: 600000,
-    password: process.env.RDS_PASSWORD,
-    database: process.env.RDS_DB,
+    password: RDS_PASSWORD,
+    database: RDS_DB,
     multipleStatements: true,
   });
 

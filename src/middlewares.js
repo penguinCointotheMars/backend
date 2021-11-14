@@ -2,14 +2,15 @@ import aws from "aws-sdk";
 import multer from "multer";
 import multerS3 from "multer-s3";
 import dotenv from "dotenv";
+import { S3_ID, S3_SECRET } from "./credentials";
 dotenv.config();
 // import routes from "./routes";
 
 // connect s3
 const s3 = new aws.S3({
   credentials: {
-    accessKeyId: process.env.S3_ID,
-    secretAccessKey: process.env.S3_SECRET,
+    accessKeyId: S3_ID,
+    secretAccessKey: S3_SECRET,
   },
 });
 

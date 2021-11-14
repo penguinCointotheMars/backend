@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.postLogin = exports.postJoin = exports.postGoogleJoin = exports.postChangePassword = exports.getUsers = void 0;
+exports.postLogin = exports.postJoin = exports.postEditProfile = exports.getUsers = void 0;
 
 var _bcrypt = _interopRequireDefault(require("bcrypt"));
 
@@ -27,48 +27,46 @@ var getUsers = /*#__PURE__*/function () {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            _context.prev = 0;
-
-            _db["default"].query('SELECT * FROM user_credential LIMIT 100', function (err, result) {
-              if (err) throw err;
-
-              if (result.length > 0) {
-                var allUsers = [];
-                result.forEach(function (e) {
-                  var user = {
-                    email: e.email,
-                    name: e.name,
-                    user_id: e.user_id
-                  };
-                  allUsers.push(user);
+            try {
+              _db["default"].query('SELECT * FROM user_credential LIMIT 100', function (err, result) {
+                if (err) res.status(400).json({
+                  err: err
                 });
-                res.status(200).json({
-                  success: true,
-                  user: allUsers,
-                  message: "User credentials limited 100"
-                });
-              } else {
-                res.status(400).json({
-                  success: false,
-                  message: "Not found user information"
-                });
-              }
-            });
 
-            _context.next = 7;
-            break;
+                if (result.length > 0) {
+                  var allUsers = [];
+                  result.forEach(function (e) {
+                    var user = {
+                      email: e.email,
+                      name: e.name,
+                      user_id: e.user_id
+                    };
+                    allUsers.push(user);
+                  });
+                  res.status(200).json({
+                    success: true,
+                    user: allUsers,
+                    message: "User credentials limited 100"
+                  });
+                } else {
+                  res.status(400).json({
+                    success: false,
+                    message: "Not found user information"
+                  });
+                }
+              });
+            } catch (err) {
+              res.status(400).json({
+                err: err
+              });
+            }
 
-          case 4:
-            _context.prev = 4;
-            _context.t0 = _context["catch"](0);
-            throw _context.t0;
-
-          case 7:
+          case 1:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 4]]);
+    }, _callee);
   }));
 
   return function getUsers(_x, _x2) {
@@ -86,16 +84,80 @@ var postJoin = /*#__PURE__*/function () {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            _context2.prev = 0;
-            // To do : 1) 포토는 따로 S3 연결하는 함수 생성해서 req에서 받아옴 
-            //         2) id Verification : 따로 함수 생성 
             _req$body = req.body, email = _req$body.email, password = _req$body.password, name = _req$body.name, birthDate = _req$body.birthDate, address = _req$body.address, phoneNumber = _req$body.phoneNumber, userType = _req$body.userType, description = _req$body.description;
-            saltRounds = 10;
-            salt = _bcrypt["default"].genSaltSync(saltRounds);
-            _context2.next = 6;
-            return _bcrypt["default"].hash(password, salt);
+            _context2.prev = 1;
+
+            if (!(email == "" || password == "" || name == "" || birthDate == "" || address == "" || phoneNumber == "" || userType == "" || description == "")) {
+              _context2.next = 6;
+              break;
+            }
+
+            res.status(400).json({
+              success: false,
+              message: "Please fully fill fields!"
+            });
+            _context2.next = 30;
+            break;
 
           case 6:
+            if (/^[a-zA-Z ]*$/.test(name)) {
+              _context2.next = 10;
+              break;
+            }
+
+            res.status(400).json({
+              success: false,
+              message: "Invalid name"
+            });
+            _context2.next = 30;
+            break;
+
+          case 10:
+            if (/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+              _context2.next = 14;
+              break;
+            }
+
+            res.status(400).json({
+              success: false,
+              message: "Invalid email"
+            });
+            _context2.next = 30;
+            break;
+
+          case 14:
+            if (new Date(birthDate).getTime()) {
+              _context2.next = 18;
+              break;
+            }
+
+            res.status(400).json({
+              success: false,
+              message: "Invalid date of birth entered"
+            });
+            _context2.next = 30;
+            break;
+
+          case 18:
+            if (!(password.length < 8)) {
+              _context2.next = 22;
+              break;
+            }
+
+            res.status(400).json({
+              success: false,
+              message: "Password is too short!"
+            });
+            _context2.next = 30;
+            break;
+
+          case 22:
+            saltRounds = 10;
+            salt = _bcrypt["default"].genSaltSync(saltRounds);
+            _context2.next = 26;
+            return _bcrypt["default"].hash(password, salt);
+
+          case 26:
             hashedPassword = _context2.sent;
             user = {
               email: email,
@@ -107,48 +169,60 @@ var postJoin = /*#__PURE__*/function () {
               user_type: userType,
               description: description
             };
-            console.log(user);
             newUserId = (0, _nanoid.nanoid)();
 
             _db["default"].query('SELECT * FROM user_credential WHERE email = ?', email, function (err, result) {
-              if (err) throw err;
+              if (err) res.status(400).json({
+                err: err
+              });
               if (result.length > 0) res.status(400).json({
                 success: false,
                 message: "You are already registered"
               });else {
                 _db["default"].query('SELECT 1 FROM user_credential WHERE user_id = ?', newUserId, function (err, results) {
-                  if (err) throw err;
+                  if (err) res.status(400).json({
+                    err: err
+                  });
                   if (results.length > 0) newUserId = (0, _nanoid.nanoid)();
                 });
 
                 user['user_id'] = newUserId;
 
                 _db["default"].query('INSERT INTO user_credential SET ?', user, function (err) {
-                  if (err) throw err;else {
+                  if (err) res.status(400).json({
+                    err: err
+                  });else {
+                    var loggedUser = {
+                      email: email,
+                      user_id: newUserId
+                    };
                     res.status(200).json({
                       success: true,
                       message: "You are successfully registered",
-                      email: email
+                      user: loggedUser
                     }); // insertId add as asending 
                   }
                 });
               }
             });
 
-            _context2.next = 16;
+          case 30:
+            _context2.next = 35;
             break;
 
-          case 13:
-            _context2.prev = 13;
-            _context2.t0 = _context2["catch"](0);
-            throw _context2.t0;
+          case 32:
+            _context2.prev = 32;
+            _context2.t0 = _context2["catch"](1);
+            res.status(400).json({
+              err: _context2.t0
+            });
 
-          case 16:
+          case 35:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 13]]);
+    }, _callee2, null, [[1, 32]]);
   }));
 
   return function postJoin(_x3, _x4) {
@@ -166,172 +240,115 @@ var postLogin = /*#__PURE__*/function () {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            _context4.prev = 0;
             _req$body2 = req.body, email = _req$body2.email, password = _req$body2.password;
 
-            _db["default"].query('SELECT * FROM user_credential WHERE email = ?', email, /*#__PURE__*/function () {
-              var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(err, result) {
-                var hashedPassword, loggedUser;
-                return regeneratorRuntime.wrap(function _callee3$(_context3) {
-                  while (1) {
-                    switch (_context3.prev = _context3.next) {
-                      case 0:
-                        if (!err) {
-                          _context3.next = 2;
-                          break;
+            try {
+              if (email == "" || password == "") {
+                res.status(400).json({
+                  success: false,
+                  message: "Please fully fill fields!"
+                });
+              } else {
+                _db["default"].query('SELECT * FROM user_credential WHERE email = ?', email, /*#__PURE__*/function () {
+                  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(err, result) {
+                    var hashedPassword, loggedUser;
+                    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+                      while (1) {
+                        switch (_context3.prev = _context3.next) {
+                          case 0:
+                            if (err) res.status(400).json({
+                              err: err
+                            });
+
+                            if (!(result.length === 0)) {
+                              _context3.next = 5;
+                              break;
+                            }
+
+                            res.status(400).json({
+                              success: false,
+                              message: "Email is incorrect"
+                            });
+                            _context3.next = 15;
+                            break;
+
+                          case 5:
+                            if (result.length !== 1) console.log("😱😱😱😱😱 Error : user email is duplicated. Please check DB!");
+                            hashedPassword = result[0].password;
+                            _context3.next = 9;
+                            return _bcrypt["default"].compare(password, hashedPassword);
+
+                          case 9:
+                            if (!_context3.sent) {
+                              _context3.next = 14;
+                              break;
+                            }
+
+                            loggedUser = {
+                              email: email,
+                              user_id: result[0].user_id
+                            };
+                            res.status(200).json({
+                              success: true,
+                              user: loggedUser,
+                              message: "Login success"
+                            });
+                            _context3.next = 15;
+                            break;
+
+                          case 14:
+                            res.status(400).json({
+                              success: false,
+                              message: "Password is incorrect"
+                            });
+
+                          case 15:
+                          case "end":
+                            return _context3.stop();
                         }
+                      }
+                    }, _callee3);
+                  }));
 
-                        throw err;
+                  return function (_x7, _x8) {
+                    return _ref4.apply(this, arguments);
+                  };
+                }());
+              }
+            } catch (err) {
+              res.status(400).json({
+                err: err
+              });
+            }
 
-                      case 2:
-                        if (!(result.length === 0)) {
-                          _context3.next = 6;
-                          break;
-                        }
-
-                        res.status(400).json({
-                          success: false,
-                          message: "Email is incorrect"
-                        });
-                        _context3.next = 16;
-                        break;
-
-                      case 6:
-                        if (result.length !== 1) console.log("😱😱😱😱😱 Error : user email is duplicated. Please check DB!");
-                        hashedPassword = result[0].password;
-                        _context3.next = 10;
-                        return _bcrypt["default"].compare(password, hashedPassword);
-
-                      case 10:
-                        if (!_context3.sent) {
-                          _context3.next = 15;
-                          break;
-                        }
-
-                        loggedUser = {
-                          email: email,
-                          user_id: result[0].user_id
-                        };
-                        res.status(200).json({
-                          success: true,
-                          user: loggedUser,
-                          message: "Login success"
-                        });
-                        _context3.next = 16;
-                        break;
-
-                      case 15:
-                        res.status(400).json({
-                          success: false,
-                          message: "Password is incorrect"
-                        });
-
-                      case 16:
-                      case "end":
-                        return _context3.stop();
-                    }
-                  }
-                }, _callee3);
-              }));
-
-              return function (_x7, _x8) {
-                return _ref4.apply(this, arguments);
-              };
-            }());
-
-            _context4.next = 8;
-            break;
-
-          case 5:
-            _context4.prev = 5;
-            _context4.t0 = _context4["catch"](0);
-            throw _context4.t0;
-
-          case 8:
+          case 2:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[0, 5]]);
+    }, _callee4);
   }));
 
   return function postLogin(_x5, _x6) {
     return _ref3.apply(this, arguments);
   };
-}(); //         var username = request.body.username;
-// 	var password = request.body.password;
-// 	if (username && password) {
-// 		connection.query('SELECT * FROM accounts WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
-// 			if (results.length > 0) {
-// 				request.session.loggedin = true;
-// 				request.session.username = username;
-// 				response.redirect('/home');
-// 			} else {
-// 				response.send('Incorrect Username and/or Password!');
-// 			}			
-// 			response.end();
-// 		});
-// 	} else {
-// 		response.send('Please enter Username and Password!');
-// 		response.end();
-// 	}
-//         const user = await User.findOne({email : req.body.email});
-//         if(user !== null){
-//             res.status(400).json({success: false, message : "You are already registered"});
-//         }else{
-//             const hashedPassword = await bcrypt.hash(req.body.password, 10);
-//             const user = await User.create({
-//                 username: req.body.username,
-//                 email: req.body.email,
-//                 password: hashedPassword,
-//             });
-//             res.status(200).json({success: true, user : user, message: "Your account has been saved"});
-//         }
+}(); // export const postGoogleJoin = async (req, res) => {
+//     try{
 //     }catch(err){
-//         res.status(400).json({err : err});
 //     }
 // }
-
-
-exports.postLogin = postLogin;
-
-var postGoogleJoin = /*#__PURE__*/function () {
-  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
-    return regeneratorRuntime.wrap(function _callee5$(_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
-          case 0:
-            try {} catch (err) {}
-
-          case 1:
-          case "end":
-            return _context5.stop();
-        }
-      }
-    }, _callee5);
-  }));
-
-  return function postGoogleJoin(_x9, _x10) {
-    return _ref5.apply(this, arguments);
-  };
-}(); // export const postLogin = async (req, res) => {
+// export const postChangePassword = async (req, res) => {
 //     try{
 //         const user = await User.findOne({email : req.body.email});
-//         if(user === null){
-//             res.status(400).json({success: false, message : "email is incorrect"});
+//         if(req.body.password === req.body.newpassword){
+//             res.status(400).json({success: false, message: "new password is same"});
+//         }
+//         else if(!(await bcrypt.compare(req.body.password, user.password))){
+//             res.status(400).json({success: false, message: "wrong password"});
 //         }else{
-//             if(await bcrypt.compare(req.body.password, user.password)){
-//                 const loggedUser = {
-//                     email : user.email,
-//                     _id : user._id,
-//                     photos : user.photos,
-//                     comments : user.comments, 
-//                     username: user.username ? user.username : "",
-//                 }
-//                 res.status(200).json({success: true, user : loggedUser, message : "Login success"});
-//             }else{
-//                 res.status(400).json({success: false, message : "password is incorrect"});
-//             }
+//                 const password = await bcrypt.hash(req.body.newpassword, 10);
+//                 const user = await User.findOneAndUpdate({ email: req.body.email }, { password});
+//                 res.status(200).json({success : true, user : user,  message : "successfully password was changed"});
 //         }
 //     }catch(error){
 //         res.status(400).json({err : err});
@@ -339,96 +356,69 @@ var postGoogleJoin = /*#__PURE__*/function () {
 // }
 
 
-exports.postGoogleJoin = postGoogleJoin;
+exports.postLogin = postLogin;
 
-var postChangePassword = /*#__PURE__*/function () {
-  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(req, res) {
-    var user, password, _user;
+var postEditProfile = /*#__PURE__*/function () {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
+    var _req$body3, user_id, email, address, phoneNumber, userType, description, location;
 
-    return regeneratorRuntime.wrap(function _callee6$(_context6) {
+    return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
-        switch (_context6.prev = _context6.next) {
+        switch (_context5.prev = _context5.next) {
           case 0:
-            _context6.prev = 0;
-            _context6.next = 3;
-            return User.findOne({
-              email: req.body.email
-            });
+            _req$body3 = req.body, user_id = _req$body3.user_id, email = _req$body3.email, address = _req$body3.address, phoneNumber = _req$body3.phoneNumber, userType = _req$body3.userType, description = _req$body3.description, location = req.file.location;
+            console.log(user_id, email);
+
+            try {
+              _db["default"].query('SELECT * FROM user_credential WHERE user_id = ? AND email = ?', [user_id, email], function (err, result) {
+                if (err) res.status(400).json({
+                  err: err
+                });
+
+                if (result.length > 1) {
+                  res.status(400).json({
+                    success: false,
+                    message: "😨😨😨😨 user_id is duplicated! Please check DB!"
+                  });
+                } else {
+                  var userUpdate = {
+                    address: address,
+                    phone_number: phoneNumber,
+                    user_type: userType,
+                    description: description,
+                    profile_url: location
+                  };
+
+                  _db["default"].query("UPDATE user_credential SET ? WHERE user_id = ?", [userUpdate, result[0].user_id], function (err, results) {
+                    if (err) res.status(400).json({
+                      success: false,
+                      err: err
+                    });else {
+                      res.status(200).json({
+                        success: true,
+                        user: userUpdate,
+                        message: "😉 user profile update is completed!"
+                      });
+                    }
+                  });
+                }
+              });
+            } catch (err) {
+              res.status(400).json({
+                err: err
+              });
+            }
 
           case 3:
-            user = _context6.sent;
-
-            if (!(req.body.password === req.body.newpassword)) {
-              _context6.next = 8;
-              break;
-            }
-
-            res.status(400).json({
-              success: false,
-              message: "new password is same"
-            });
-            _context6.next = 21;
-            break;
-
-          case 8:
-            _context6.next = 10;
-            return _bcrypt["default"].compare(req.body.password, user.password);
-
-          case 10:
-            if (_context6.sent) {
-              _context6.next = 14;
-              break;
-            }
-
-            res.status(400).json({
-              success: false,
-              message: "wrong password"
-            });
-            _context6.next = 21;
-            break;
-
-          case 14:
-            _context6.next = 16;
-            return _bcrypt["default"].hash(req.body.newpassword, 10);
-
-          case 16:
-            password = _context6.sent;
-            _context6.next = 19;
-            return User.findOneAndUpdate({
-              email: req.body.email
-            }, {
-              password: password
-            });
-
-          case 19:
-            _user = _context6.sent;
-            res.status(200).json({
-              success: true,
-              user: _user,
-              message: "successfully password was changed"
-            });
-
-          case 21:
-            _context6.next = 26;
-            break;
-
-          case 23:
-            _context6.prev = 23;
-            _context6.t0 = _context6["catch"](0);
-            res.status(400).json({
-              err: err
-            });
-
-          case 26:
           case "end":
-            return _context6.stop();
+            return _context5.stop();
         }
       }
-    }, _callee6, null, [[0, 23]]);
+    }, _callee5);
   }));
 
-  return function postChangePassword(_x11, _x12) {
-    return _ref6.apply(this, arguments);
+  return function postEditProfile(_x9, _x10) {
+    return _ref5.apply(this, arguments);
   };
 }(); // using passportjs
 //     const Users = new User({email : req.body.email});
@@ -482,4 +472,4 @@ var postChangePassword = /*#__PURE__*/function () {
 // });
 
 
-exports.postChangePassword = postChangePassword;
+exports.postEditProfile = postEditProfile;

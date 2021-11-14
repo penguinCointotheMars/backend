@@ -2,13 +2,14 @@ import "regenerator-runtime";
 import "./db_module/db";
 import app from './app';
 import dotenv from 'dotenv';
+import { PORT } from "./credentials";
 dotenv.config();
 
 
 
-const PORT = process.env.PORT || 3000;
+const SELECTED_PORT = PORT || 3000;
 
 const handelListening = () =>
-  console.log(`✅ Listening on : http://localhost:${PORT}`);
+  console.log(`✅ Listening on : http://localhost:${SELECTED_PORT}`);
 
-app.listen(PORT, handelListening);
+app.listen(SELECTED_PORT, handelListening);

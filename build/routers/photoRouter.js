@@ -17,11 +17,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 var photoRouter = _express["default"].Router(); // 'photo/search' 
 // post : {location : [long, latt], distance : distance}
-
-
-photoRouter.post(_routes["default"].search, _photoController.postSearch); //'photo/upload'
+// photoRouter.post(routes.search, postSearch);
+//'photo/upload'
 // post : {title, description, location, _id, imageData}
 // photoRouter.post(routes.upload, uploadTest);
+
 
 photoRouter.post(_routes["default"].upload, _middlewares.uploadePhoto, _photoController.postUpload);
 photoRouter.post(_routes["default"].editPhoto, _photoController.postEditPhoto);
